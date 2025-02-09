@@ -84,7 +84,31 @@
 	{/if}
 
 	{if !$hideGalleys}
-		<ul class="galleys_links">
+		<ul class="{if !$hideGalleys}
+    <ul class="galleys_links">
+        {foreach from=$publication->getData('galleys') item=galley}
+            {if $primaryGenreIds}
+                {assign var="file" value=$galley->getFile()}
+                {if !$galley->getData('urlRemote') && !($file && in_array($file->getGenreId(), $primaryGenreIds))}
+                    {continue}
+                {/if}
+            {/if}
+            <li>
+                {assign var="hasArticleAccess" value=$hasAccess}
+                {if $currentContext->getSetting('publishingMode') == APP\journal\Journal::PUBLISHING_MODE_OPEN || $publication->getData('accessStatus') == APP\submission\Submission::ARTICLE_ACCESS_OPEN}
+                    {assign var="hasArticleAccess" value=1}
+                {/if}
+                {assign var="id" value="article-{$article->getId()}-galley-{$galley->getId()}"}
+                {if $galley->getLabel() == 'PDF'} <!-- Check if the galley is a PDF -->
+                    <a href="{url router=$smarty.const.ROUTE_PAGE page="article" op="download" path=$galley->getBestGalleyId($article)}">
+                        Download the PDF for $30
+                    </a>
+                {/if}
+                {include file="frontend/objects/galley_link.tpl" parent=$article publication=$publication id=$id labelledBy="{$id} article-{$article->getId()}" hasAccess=$hasArticleAccess purchaseFee=$currentJournal->getSetting('purchaseFee') purchaseCurrency=$currentJournal->getSetting('currency')}
+            </li>
+        {/foreach}
+    </ul>
+{/if}">
 			{foreach from=$publication->getData('galleys') item=galley}
 				{if $primaryGenreIds}
 					{assign var="file" value=$galley->getFile()}
